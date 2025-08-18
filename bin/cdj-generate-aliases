@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Usage:
+#   ~/.cdj_generate_alias.sh [BASE_DIR] [PREFIX] [MAX_DEPTH]
+# Defaults: BASE_DIR = $PWD, PREFIX = cdj, MAX_DEPTH = 3
+BASE_DIR="${1:-$PWD}"
+PREFIX="${2:-cdj}"
+MAX_DEPTH="${3:-3}"
+
+echo "# Auto-generated aliases for quick project navigation"
+printf "alias %s='cd \"%s\"'\n" "$PREFIX" "$BASE_DIR"
+
+generate_aliases() {
+  local path="$1"
+  local prefix="$2"
+  local depth="$3"
+
+  if (( depth >= MAX_DEPTH )); then
+    return
+  fi
+
+  # Collect and sort subdirs; ignore errors if none are found
+  local -a sorted=()
+  while IFS= read -r name; do
+    sorted+=("$name")
+  done < <(
+    find "$path" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; 2>/dev/null \
+    | awk 'BEGIN{IGNORECASE=1} {p = ($0 ~ /^\./) ? 1 : 0; print p "\t" $0}' \
+    | sort -k1,1n -k2,2f \
+    | cut -f2-
+  )
+
+  declare -A seen=()
+
+  for name in "${sorted[@]}"; do
+    # Take first alphabetic or underscore; fallback to 'x'
+    local first_alpha
+    first_alpha="$(printf '%s' "$name" | sed -E 's/^[^A-Za-z_]*([A-Za-z_]).*/\1/;t; s/.*/x/')"
+    local key="${first_alpha,,}"
+
+    local count=${seen[$key]:-0}
+    ((++count))
+    seen[$key]=$count
+
+    local suffix="$key"
+    (( count > 1 )) && suffix="${key}${count}"
+
+    local alias_name="${prefix}${suffix}"
+    local alias_path="$path/$name"
+    printf "alias %s='cd \"%s\"'\n" "$alias_name" "$alias_path"
+
+    generate_aliases "$alias_path" "$alias_name" $((depth + 1))
+  done
+}
+
+generate_aliases "$BASE_DIR" "$PREFIX" 0
+

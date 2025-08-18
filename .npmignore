@@ -1,0 +1,13 @@
+# IDE / project files
+.idea/
+*.iml
+
+# Local notes
+CLAUDE.md
+
+# Node modules (just in case)
+node_modules/
+
+# Other logs / temp
+*.log
+*.tmp

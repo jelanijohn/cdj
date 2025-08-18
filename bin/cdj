@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Default base directory, overridable via environment variable
+BASE="${CDJ_BASE:-$HOME/Projects}"
+
+resolve_path() {
+  local path="$1"
+  if [[ "$path" =~ ^~ ]]; then
+    eval echo "$path"
+  else
+    echo "$path"
+  fi
+}
+
+generate_aliases() {
+  local base="${1:-$BASE}"
+  local prefix="${2:-cdj}"
+  local max_depth="${3:-3}"
+  "$(dirname "$0")/cdj-generate-aliases" "$base" "$prefix" "$max_depth"
+}
+
+print_hook() {
+  # Keep in sync with postinstall.js HOOK block
+  cat <<'EOF'
+# --- cdj hook (BEGIN) ---
+cdj() {
+  local resolver target
+  # Find the actual binary path, not this function
+  resolver="$(type -P cdj 2>/dev/null || true)"
+  if [ -n "$resolver" ]; then
+    target="$("$resolver" "$@")" || return 1
+  else
+    target="$(npx -y cdj "$@")" || return 1
+  fi
+  cd "$target" || return 1
+}
+# --- cdj hook (END) ---
+EOF
+}
+
+cdj() {
+  local current="$1"
+  local dir="$2"
+
+  # List immediate child directories, sorted case-insensitively
+  local entries=()
+  while IFS= read -r name; do
+    entries+=("$name")
+  done < <(find "$dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; 2>/dev/null \
+    | LC_ALL=C sort -f)
+
+  # If no subdirs, stay put
+  [[ ${#entries[@]} -eq 0 ]] && echo "$dir" && return
+
+  local index=1
+  for name in "${entries[@]}"; do
+    local char="${current:0:1}"
+    local rest="${current:1}"
+    if [[ -n "$char" && "$name" == "$char"* ]]; then
+      if [[ "$rest" =~ ^[0-9]+$ ]]; then
+        # Numeric disambiguation like p2
+        if (( index == rest )); then
+          echo "$dir/$name"
+          return
+        fi
+        ((index++))
+      else
+        # Recurse deeper with remaining chars
+        echo "$(cdj "$rest" "$dir/$name")"
+        return
+      fi
+    fi
+  done
+
+  # Default to first match if a letter was provided but no number chosen
+  if [[ "$current" =~ ^[a-zA-Z] ]]; then
+    for name in "${entries[@]}"; do
+      if [[ "$name" == "${current:0:1}"* ]]; then
+        echo "$(cdj "${current:1}" "$dir/$name")"
+        return
+      fi
+    done
+  fi
+
+  # No match: return current dir
+  echo "$dir"
+}
+
+show_help() {
+  cat <<EOF
+Usage: cdj [OPTIONS] [pattern]
+
+Navigate quickly through directories in the base folder using
+character-by-character matching (e.g., "p2", "ws", "wsc").
+
+Options:
+  -g, --gen-aliases [BASE PREFIX DEPTH]  Generate aliases using bundled generator
+  -h, --help                             Show this help
+  hook                                   Print the shell hook for bash/zsh
+                                         (usage: cdj hook >> ~/.zshrc)
+
+Environment:
+  CDJ_BASE    Override base directory (default: \$HOME/Projects)
+
+Examples:
+  export CDJ_BASE=\$HOME/Workspaces
+  cdj p2
+  cdj -g \$HOME/Projects cdj 3 >> ~/.bashrc
+  cdj hook >> ~/.zshrc && source ~/.zshrc
+EOF
+}
+
+main() {
+  case "${1:-}" in
+    hook)
+      print_hook
+      exit 0
+      ;;
+    -g|--gen-aliases)
+      shift
+      generate_aliases "$@"
+      exit 0
+      ;;
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+  esac
+
+  local input="${1:-}"
+  local target
+  target="$(cdj "$input" "$(resolve_path "$BASE")")"
+  echo "$target"
+}
+
+main "$@"

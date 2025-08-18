@@ -1,0 +1,15 @@
+{
+  "name": "cdj",
+  "version": "1.0.0",
+  "description": "CLI tool to quickly navigate projects and auto-generate cd aliases",
+  "bin": {
+    "cdj": "bin/cdj"
+  },
+  "keywords": ["cd", "alias", "navigation", "bash"],
+  "author": "Jelani John",
+  "license": "MIT",
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js",
+    "preuninstall": "node scripts/preuninstall.js"
+  }
+}

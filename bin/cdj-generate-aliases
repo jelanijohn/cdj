@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eu
+# enable pipefail only if the shell supports it
+(set -o pipefail) 2>/dev/null && set -o pipefail
 
 # Usage:
 #   ~/.cdj_generate_alias.sh [BASE_DIR] [PREFIX] [MAX_DEPTH]

@@ -11,5 +11,13 @@
   "scripts": {
     "postinstall": "node scripts/postinstall.js",
     "preuninstall": "node scripts/preuninstall.js"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jelanijohn/cdj.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jelanijohn/cdj/issues"
+  },
+  "homepage": "https://github.com/jelanijohn/cdj#readme"
 }

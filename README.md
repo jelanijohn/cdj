@@ -41,22 +41,6 @@ source ~/.zshrc
 
 ### Basic Navigation
 
-```bash
-# Navigate to ~/Projects
-cdj
-
-# Navigate to first directory starting with 'p'
-cdj p
-
-# Navigate to second directory starting with 'p'
-cdj p2
-
-# Chain characters for deeper navigation
-cdj pa  # Projects/project-alpha (if it's the first match starting with 'p' then 'a')
-```
-
-### How It Works
-
 The `cdj` command uses intelligent character-by-character matching:
 
 1. Each character filters directories starting with that character (case-insensitive)
@@ -69,18 +53,25 @@ Example directory structure:
   ├── .config/
   ├── app-frontend/
   ├── app-backend/
-  ├── blog/
+  ├── crm/
   ├── portfolio/
-  └── project-alpha/
+  ├   └──alpha/
+  └── project/
+      └── beta/
 ```
 
 Navigation examples:
+- `cdj` → `~/Projects/` (base directory - configurable, see below)
 - `cdj a` → `~/Projects/app-backend/` (first alphabetically)
 - `cdj a2` → `~/Projects/app-frontend/` (second match)
-- `cdj b` → `~/Projects/blog/`
+- `cdj c` → `~/Projects/crm/`
 - `cdj p` → `~/Projects/portfolio/` (first 'p' match)
-- `cdj p2` → `~/Projects/project-alpha/` (second 'p' match)
+- `cdj p2` → `~/Projects/project/` (second 'p' match)
+- `cdj pa` → `~/Projects/portfolio/alpha/`
+- `cdj p2b` → `~/Projects/project/beta/`
 - `cdj .` → `~/Projects/.config/`
+- `cdj paxyz` → `~/Projects/portfolio/alpha/` (graceful failure)
+
 ### Generate Aliases
 
 Alias generation is built into `cdj` as an option:
@@ -88,9 +79,20 @@ Alias generation is built into `cdj` as an option:
 ```bash
 # Generate aliases for current directory
 cdj -g
+cdj --gen-aliases
+```
 
+### Alias Generation Options
+
+The `cdj -g` / `--gen-aliases` option accepts three parameters:
+
+1. **BASE_DIR** (default: current directory): Root directory for alias generation
+2. **PREFIX** (default: "cdj"): Prefix for all generated aliases
+3. **MAX_DEPTH** (default: 3): Maximum directory depth for alias generation
+
+```bash
 # Generate aliases for a specific directory with custom prefix and depth
-cdj -g /path/to/projects myprefix 2
+cdj -g /path/to/directory myprefix 2
 
 # Add to your shell config
 cdj -g ~/Projects cdj 2 >> ~/.bashrc
@@ -108,10 +110,10 @@ Example output:
 alias cdj='cd "/home/user/Projects"'
 alias cdja='cd "/home/user/Projects/app-backend"'
 alias cdja2='cd "/home/user/Projects/app-frontend"'
-alias cdjb='cd "/home/user/Projects/blog"'
 alias cdjp='cd "/home/user/Projects/portfolio"'
-alias cdjp2='cd "/home/user/Projects/project-alpha"'
-alias cdjc='cd "/home/user/Projects/.config"'   # lower-priority hidden dir
+alias cdjp2='cd "/home/user/Projects/project"'
+alias cdjc='cd "/home/user/Projects/crm"'
+alias cdjc2='cd "/home/user/Projects/.config"'   # hidden dir uses first char after dot, but lower priority
 ```
 
 ## Configuration
@@ -127,14 +129,6 @@ export CDJ_BASE=~/Workspaces
 
 Add that line to your shell config (`~/.bashrc` or `~/.zshrc`) to make
 it persistent.
-
-### Alias Generation Options
-
-The `cdj -g` / `--gen-aliases` option accepts three parameters:
-
-1. **BASE_DIR** (default: current directory): Root directory for alias generation
-2. **PREFIX** (default: "cdj"): Prefix for all generated aliases
-3. **MAX_DEPTH** (default: 3): Maximum directory depth for alias generation
 
 ## Examples
 

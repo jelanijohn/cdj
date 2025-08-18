@@ -1,11 +1,16 @@
 {
   "name": "cdj",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI tool to quickly navigate projects and auto-generate cd aliases",
   "bin": {
     "cdj": "bin/cdj"
   },
-  "keywords": ["cd", "alias", "navigation", "bash"],
+  "keywords": [
+    "cd",
+    "alias",
+    "navigation",
+    "bash"
+  ],
   "author": "Jelani John",
   "license": "MIT",
   "scripts": {

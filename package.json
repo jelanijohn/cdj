@@ -1,9 +1,10 @@
 {
   "name": "cdj",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "CLI tool to quickly navigate projects and auto-generate cd aliases",
   "bin": {
-    "cdj": "bin/cdj"
+    "cdj": "bin/cdj",
+    "cdj-generate-aliases": "bin/cdj-generate-aliases"
   },
   "keywords": [
     "cd",

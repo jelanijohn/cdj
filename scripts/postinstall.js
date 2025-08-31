@@ -8,6 +8,12 @@ const MARK_END = '# --- cdj hook (END) ---';
 const HOOK = `
 ${MARK_BEGIN}
 cdj() {
+  # If generating aliases, just run the binary and return
+  if [[ "$1" == "-g" || "$1" == "--gen-aliases" ]]; then
+    command cdj "$@"
+    return
+  fi
+  
   local resolver target
   # Find the actual binary path, not this function
   resolver="$(type -P cdj 2>/dev/null || true)"

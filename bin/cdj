@@ -19,7 +19,18 @@ generate_aliases() {
   local base="${1:-$BASE}"
   local prefix="${2:-cdj}"
   local max_depth="${3:-3}"
-  "$(dirname "$0")/cdj-generate-aliases" "$base" "$prefix" "$max_depth"
+
+  # Where to save aliases (overridable)
+  local alias_dir="${CDJ_ALIAS_DIR:-$HOME/.config/cdj}"
+  local alias_file="${CDJ_ALIAS_FILE:-$alias_dir/cdj_aliases.sh}"
+  mkdir -p "$alias_dir"
+
+  # Generate aliases: keep STDOUT identical, also save to file
+  "$(dirname "$0")/cdj-generate-aliases" "$base" "$prefix" "$max_depth" | tee "$alias_file"
+
+  # Informative note to STDERR so pipes (STDOUT) remain clean
+  printf '[cdj] Aliases saved to %s\n[cdj] To load them now:  source %s\n' \
+    "$alias_file" "$alias_file" >&2
 }
 
 print_hook() {

@@ -116,6 +116,14 @@ alias cdjc='cd "/home/user/Projects/crm"'
 alias cdjc2='cd "/home/user/Projects/.config"'   # hidden dir uses first char after dot, but lower priority
 ```
 
+#### Saved aliases file
+
+`cdj -g` now also writes to `~/.config/cdj/cdj_aliases.sh` while still printing to STDOUT.
+
+Load them:
+```bash
+source ~/.config/cdj/cdj_aliases.sh
+
 ## Configuration
 
 ### Base Directory
